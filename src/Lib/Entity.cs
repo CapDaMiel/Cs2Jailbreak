@@ -109,9 +109,7 @@ public static class Entity
         Chat.Announce(DOOR_PREFIX,"Forcing closing all doors!");
 
         ForceEntInput("func_door","Close");
-        ForceEntInput("func_movelinear","Close");
-        ForceEntInput("func_door_rotating","Close");
-        ForceEntInput("prop_door_rotating","Close");
+
     }
 
     public static void ForceOpen()
@@ -119,10 +117,7 @@ public static class Entity
         Chat.Announce(DOOR_PREFIX,"Forcing open all doors!");
 
         ForceEntInput("func_door","Open");
-        ForceEntInput("func_movelinear","Open");
-        ForceEntInput("func_door_rotating","Open");
-        ForceEntInput("prop_door_rotating","Open");
-        ForceEntInput("func_breakable","Break");
+        
     }
 
 

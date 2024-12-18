@@ -116,7 +116,7 @@ public partial class LastRequest
             // our handlers only check once we have actually triggered the LR
             if(InLR(tPlayer) || InLR(ctPlayer))
             {
-                tPlayer.Announce(LR_PREFIX,"One or more players is allready in LR");
+                tPlayer.Announce(LR_PREFIX,"Un jucator este dea in LR.");
                 return;
             }
 
@@ -570,5 +570,5 @@ public partial class LastRequest
     
     long startTimestamp = 0;
 
-    public static String LR_PREFIX = $" {ChatColors.Green}[LR]: {ChatColors.White}";
+    public static String LR_PREFIX = $" {ChatColors.Green}[Jailbreak]: {ChatColors.White}";
 }

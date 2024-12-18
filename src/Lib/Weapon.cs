@@ -1,12 +1,20 @@
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities;
-using CounterStrikeSharp.API.Modules.Utils;
-using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Menu;
-using CSTimer = CounterStrikeSharp.API.Modules.Timers;
 using System.Drawing;
 using System.Diagnostics.CodeAnalysis;
+using Menu.Enums;
+using Menu;
+using System.Linq;
+using CounterStrikeSharp.API.Core;
+using Menu.Enums;
+using Menu;
+using CounterStrikeSharp.API.Modules.Admin;
+using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Modules.Commands;
+using System.Linq;
+using CounterStrikeSharp.API.Modules.Utils;
+
 
 public static class Weapon
 {
@@ -132,7 +140,9 @@ public static class Weapon
 
         player.GunMenuInternal(false,EventGunMenuCallback);
     }
+    public static KitsuneMenu Menu { get; set; } = null!;
 
+   
     public static void GunMenuGive(this CCSPlayerController player, ChatMenuOption option)
     {
         if(!player.IsLegalAlive())
@@ -164,13 +174,66 @@ public static class Weapon
         GunMenuGive(player,option);
     }
 
-    public static Dictionary<String,String> GUN_LIST = new Dictionary<String,String>()
+    static public void GunMenuInternal(this CCSPlayerController? player, bool no_awp, Action<CCSPlayerController, ChatMenuOption> callback)
+    {
+        // player must be alive and active!
+        if (!player.IsLegalAlive())
+        {
+            return;
+        }
+
+
+        List<MenuItem> guns = new List<MenuItem>();
+        var items = new List<MenuItem>();
+        foreach (var weapon_pair in GUN_LIST)
+        {
+            var weapon_name = weapon_pair.Key;
+
+
+
+
+            items.Add(new MenuItem(MenuItemType.Button, new MenuValue(weapon_name)));
+            {
+
+
+            };
+        }
+
+        // Afișează meniul Kitsune
+        Menu?.ShowScrollableMenu(player, "Meniu de arme", items, (buttons, Menu, selected) =>
+        {
+            if (selected == null) return;
+            // Identifică arma aleasă
+            string selectedWeaponName = selected.DataString;
+            if (!GUN_LIST.TryGetValue(selectedWeaponName, out string weaponCode))
+            {
+                player.LocalizeAnnounce("[server]","failed");
+                return;
+            }
+            player.LocalizeAnnounce("[Server]","passed");
+            // Curăță armele jucătorului și oferă noua armă
+            player.StripWeapons();
+            player.GiveWeapon(weaponCode);
+            player.GiveWeapon("deagle"); // Adaugă un pistol implicit
+
+
+
+        }, isSubmenu: false, freezePlayer: false);
+
+
+    }
+
+    public static Dictionary<String, String> GUN_LIST = new Dictionary<String, String>()
     {
         {"AK47","ak47"},
         {"M4","m4a1_silencer"},
+        {"GALIL", "galilar" },
         {"M3","nova"},
+        {"MAG", "mag7" },
+        {"SAWED-OFF", "sawedoff" },
         {"P90","p90"},
         {"M249","m249"},
+        {"NEGEV", "negev"},
         {"MP5","mp5sd"},
         {"FAL","galilar"},
         {"SG556","sg556"},
@@ -180,8 +243,24 @@ public static class Weapon
         {"XM1014","xm1014"},
         {"SCOUT","ssg08"},
         {"AWP", "awp"},
+        {"G3SG1", "g3sg1" }
+
     };
-    
+
+    public static Dictionary<String, String> PISTOL_LIST = new Dictionary<String, String>()
+    {
+
+        {"DEAGLE", "deagle" },
+        {"GLOCK", "glock" },
+        {"CZ75A", "cz75a" },
+        {"USP", "usp_silencer" },
+        {"TEC9", "tec9" },
+        {"P250", "p250" },
+        {"FIVESEVEN", "fiveseven" },
+
+    };
+
+
     public static String GunGiveName(String name)
     {
         return "weapon_" + GUN_LIST[name];
@@ -201,31 +280,7 @@ public static class Weapon
         player.GiveWeapon(GUN_LIST[name]);
     }
 
-    static public void GunMenuInternal(this CCSPlayerController? player, bool no_awp, Action<CCSPlayerController, ChatMenuOption> callback)
-    {
-        // player must be alive and active!
-        if(!player.IsLegalAlive())
-        {
-            return;
-        } 
-
     
-        var gunMenu = new ChatMenu("Gun Menu");
-
-        foreach(var weapon_pair in GUN_LIST)
-        {
-            var weapon_name = weapon_pair.Key;
-
-            if(no_awp && weapon_name == "awp")
-            {
-                continue;
-            }
-
-            gunMenu.AddMenuOption(weapon_name, callback);
-        }
-
-        MenuManager.OpenChatMenu(player, gunMenu);
-    }
 
     static public void GunMenu(this CCSPlayerController? player, bool no_awp)
     {

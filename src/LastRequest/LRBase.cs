@@ -56,7 +56,7 @@ public abstract class LRBase
         InitPlayer(player);
     }
 
-    public void Cleanup()
+    public virtual void Cleanup()
     {
         // clean up timer
         Lib.KillTimer(ref timer);
@@ -147,7 +147,7 @@ public abstract class LRBase
 
         if(player.IsLegalAlive())
         {
-            player.Announce(LastRequest.LR_PREFIX,"Fight!");
+            player.Announce(LastRequest.LR_PREFIX,"Luptati!");
         }
 
         // renable damage

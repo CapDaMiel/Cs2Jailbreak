@@ -23,7 +23,7 @@ public class Mute
             return;
         }
 
-        Chat.LocalizeAnnounce(MUTE_PREFIX,"mute.thirty");
+        //Chat.LocalizeAnnounce(MUTE_PREFIX,"mute.thirty");
 
         Lib.MuteT();
 
@@ -42,7 +42,7 @@ public class Mute
         // Go through and unmute all alive players!
         foreach(CCSPlayerController player in Lib.GetAlivePlayers())
         {
-            player.UnMute();
+            player.Mute();
         }
 
         muteTimer = null;
@@ -56,7 +56,11 @@ public class Mute
     {
         Lib.KillTimer(ref muteTimer);
 
-        MuteT();
+        foreach (CCSPlayerController player in Lib.GetAlivePlayers())
+        {
+            if (player.Team == CsTeam.Terrorist)
+            player.Mute();
+        }
     }
 
     public void RoundEnd()

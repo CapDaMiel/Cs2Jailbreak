@@ -7,13 +7,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WardenService", "WardenServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cs2Jailbreak", "src\Cs2Jailbreak.csproj", "{16C3C0CB-D2C7-49E0-911C-E311FB59EF6A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayerModelChanger", "PlayerModelChanger\PlayerModelChanger.csproj", "{83C166C3-2112-418E-ACC1-089A9BC48D08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KitsuneMenu", "..\..\..\Downloads\KitsuneMenu\KitsuneMenu\source\KitsuneMenu\KitsuneMenu.csproj", "{DB2EA847-7174-47CB-893D-F5C232025B57}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{4D7143BE-B93A-494A-AB27-CC984332BDC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -24,5 +25,16 @@ Global
 		{16C3C0CB-D2C7-49E0-911C-E311FB59EF6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16C3C0CB-D2C7-49E0-911C-E311FB59EF6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16C3C0CB-D2C7-49E0-911C-E311FB59EF6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83C166C3-2112-418E-ACC1-089A9BC48D08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83C166C3-2112-418E-ACC1-089A9BC48D08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83C166C3-2112-418E-ACC1-089A9BC48D08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83C166C3-2112-418E-ACC1-089A9BC48D08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB2EA847-7174-47CB-893D-F5C232025B57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB2EA847-7174-47CB-893D-F5C232025B57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB2EA847-7174-47CB-893D-F5C232025B57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB2EA847-7174-47CB-893D-F5C232025B57}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

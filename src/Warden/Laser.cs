@@ -18,6 +18,7 @@ using System.Globalization;
 using CSTimer = CounterStrikeSharp.API.Modules.Timers;
 using System.Drawing;
 
+
 public partial class Warden
 {
     void RemoveMarker()
@@ -67,7 +68,7 @@ public partial class Warden
             return;
         }
 
-        bool useKey = (warden.Buttons & PlayerButtons.Use) == PlayerButtons.Use;
+        bool useKey = (warden.Buttons & PlayerButtons.Attack2) == PlayerButtons.Attack2;
 
         CCSPlayerPawn? pawn = warden.Pawn();
         CPlayer_CameraServices? camera = pawn?.CameraServices;
@@ -147,7 +148,7 @@ public partial class Warden
             return;
         }
 
-        Lib.ColourMenu(player,SetLaser,"Laser colour");
+        Lib.ColourMenu(player,SetLaser,"Culoare Laser");
     }
 
     public void MarkerColourCmd(CCSPlayerController? player, CommandInfo command)
@@ -157,7 +158,7 @@ public partial class Warden
             return;
         }
 
-        Lib.ColourMenu(player,SetMarker,"Marker colour");
+        Lib.ColourMenu(player,SetMarker,"Culoare Marker");
     }
 
     public static readonly float LASER_TIME = 0.1f;

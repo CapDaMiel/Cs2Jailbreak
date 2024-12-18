@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -8,11 +8,54 @@
 
   <ItemGroup>
 
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.244" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.1" />
-    <PackageReference Include="MySqlConnector" Version="2.3.1" />
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.291" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.7" />
+    <PackageReference Include="MySqlConnector" Version="2.3.7" />
 
     <ProjectReference Include="../WardenService/WardenService.csproj" />
+	  
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Dapper">
+      <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\Dapper.dll</HintPath>
+    </Reference>
+    <Reference Include="KitsuneMenu">
+      <HintPath>..\..\..\..\Downloads\KitsuneMenu\KitsuneMenu\shared\KitsuneMenu\KitsuneMenu.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Data.Sqlite">
+      <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\Microsoft.Data.Sqlite.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
+      <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions">
+      <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="MySqlConnector">
+      <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\MySqlConnector.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="PlayerModelChanger">
+      <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\PlayerModelChanger.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.batteries_v2">
+      <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\SQLitePCLRaw.batteries_v2.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.core">
+      <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\SQLitePCLRaw.core.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.provider.e_sqlite3">
+      <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\SQLitePCLRaw.provider.e_sqlite3.dll</HintPath>
+    </Reference>
+    <Reference Include="T3Menu-API">
+      <HintPath>..\..\..\..\Downloads\T3Menu-API (1)\T3Menu-API\addons\counterstrikesharp\plugins\T3Menu-API\T3Menu-API.dll</HintPath>
+    </Reference>
+    <Reference Include="T3MenuSharedAPI">
+      <HintPath>..\..\..\..\Downloads\T3Menu-API (1)\T3Menu-API\addons\counterstrikesharp\plugins\T3Menu-API\T3MenuSharedAPI.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

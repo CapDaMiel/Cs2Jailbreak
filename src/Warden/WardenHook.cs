@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using CSTimer = CounterStrikeSharp.API.Modules.Timers;
 using System.Drawing;
+using System.Xml.Linq;
 
 
 public partial class Warden
@@ -52,7 +53,7 @@ public partial class Warden
             player.SetColour(Color.FromArgb(255, 255, 255, 255));
         }
 
-        SetWardenIfLast();
+        //SetWardenIfLast();
     /*
         ctHandicap = ((Lib.CtCount() * 3) <= Lib.TCount()) && Config.ctHandicap;
 
@@ -130,20 +131,23 @@ public partial class Warden
 
     public void Spawn(CCSPlayerController? player)
     {
-        if(!player.IsLegalAlive())
+        if (!player.IsLegalAlive())
         {
             return;
         }
 
-        if(player.IsCt() && ctHandicap)
+        if (player.IsCt())
         {
-            player.SetHealth(130);
+
+            player.SetHealth(200);
+            player.GiveNamedItem("weapon_hegrenade");
+
+
+            SetupPlayerGuns(player);
+
+            mute.Spawn(player);
         }
-
-        SetupPlayerGuns(player);
-
-        mute.Spawn(player);
-    }   
+    }         
 
     public void SwitchTeam(CCSPlayerController? player,int new_team)
     {
@@ -178,7 +182,7 @@ public partial class Warden
         // if a t dies we dont need to regive the warden
         if(player.IsCt())
         {
-            SetWardenIfLast(true);
+            //SetWardenIfLast(true);
         }
     }
 

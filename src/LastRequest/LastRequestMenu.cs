@@ -23,12 +23,8 @@ public partial class LastRequest
             return false;
         }
 
-        // prevent starts are round begin to stop lr activations on map joins
-        if(Lib.CurTimestamp() - startTimestamp < 15)
-        {
-            player.LocalizePrefix(LR_PREFIX,"lr.wait");
-            return false;
-        }
+       
+        
 
         if(!IsValidT(player))
         {
@@ -90,15 +86,16 @@ public partial class LastRequest
         String lrName = LR_NAME[(int)choice.type];
 
         // now select option
+        
         switch(choice.type)
         {
             case LRType.KNIFE:
             {
-                var lrMenu = new ChatMenu($"Choice Menu ({lrName})");
+                var lrMenu = new ChatMenu($"Meniu de optiuni ({lrName})");
 
-                lrMenu.AddMenuOption("Vanilla", PickedOption);
-                lrMenu.AddMenuOption("Low gravity", PickedOption);
-                lrMenu.AddMenuOption("High speed", PickedOption);
+                lrMenu.AddMenuOption("Normal", PickedOption);
+                lrMenu.AddMenuOption("Gravitatie mica", PickedOption);
+                lrMenu.AddMenuOption("Viteza mare", PickedOption);
                 lrMenu.AddMenuOption("One hit", PickedOption);
                 
                 MenuManager.OpenChatMenu(player, lrMenu);                
@@ -107,10 +104,10 @@ public partial class LastRequest
 
             case LRType.DODGEBALL:
             {
-                var lrMenu = new ChatMenu($"Choice Menu ({lrName})");
+                var lrMenu = new ChatMenu($"Meniu de optiuni ({lrName})");
 
-                lrMenu.AddMenuOption("Vanilla", PickedOption);
-                lrMenu.AddMenuOption("Low gravity", PickedOption);
+                lrMenu.AddMenuOption("Normal", PickedOption);
+                lrMenu.AddMenuOption("Gravitatie mica", PickedOption);
 
                 MenuManager.OpenChatMenu(player, lrMenu);
                 break;
@@ -118,7 +115,7 @@ public partial class LastRequest
 
             case LRType.WAR:
             {
-                var lrMenu = new ChatMenu($"Choice Menu ({lrName})");
+                var lrMenu = new ChatMenu($"Meniu de optiuni ({lrName})");
 
                 lrMenu.AddMenuOption("XM1014", PickedOption);
                 lrMenu.AddMenuOption("M249", PickedOption);
@@ -131,7 +128,7 @@ public partial class LastRequest
 
             case LRType.NO_SCOPE:
             {
-                var lrMenu = new ChatMenu($"Choice Menu ({lrName})");
+                var lrMenu = new ChatMenu($"Meniu de optiuni ({lrName})");
 
                 lrMenu.AddMenuOption("Awp", PickedOption);
                 lrMenu.AddMenuOption("Scout", PickedOption);
@@ -142,10 +139,10 @@ public partial class LastRequest
 
             case LRType.GRENADE:
             {
-                var lrMenu = new ChatMenu($"Choice Menu ({lrName})");
+                var lrMenu = new ChatMenu($"Meniu de optiuni ({lrName})");
 
-                lrMenu.AddMenuOption("Vanilla", PickedOption);
-                lrMenu.AddMenuOption("Low gravity", PickedOption);
+                lrMenu.AddMenuOption("Normal", PickedOption);
+                lrMenu.AddMenuOption("Gravitatie Mica", PickedOption);
 
                 MenuManager.OpenChatMenu(player, lrMenu);
                 break;
@@ -154,7 +151,7 @@ public partial class LastRequest
             case LRType.SHOT_FOR_SHOT:
             case LRType.MAG_FOR_MAG:
             {
-                var lrMenu = new ChatMenu($"Choice Menu ({lrName})");
+                var lrMenu = new ChatMenu($"Meniu de optiuni ({lrName})");
 
                 lrMenu.AddMenuOption("Deagle",PickedOption);
                 //lrMenu.AddMenuOption("Usp",PickedOption);
@@ -198,7 +195,7 @@ public partial class LastRequest
         choice.option = name;
 
         String lrName = LR_NAME[(int)choice.type];
-        String menuName = $"Partner Menu ({lrName})";
+        String menuName = $"Meniu partener ({lrName})";
 
         // Debugging pick t's
         if(choice.bypass && player.IsCt())

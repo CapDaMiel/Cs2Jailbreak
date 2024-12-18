@@ -201,7 +201,7 @@ public class JailPlayer
             return;
         }
 
-        player.Announce(Warden.WARDEN_PREFIX, $"Laser colour set to {value}");
+        player.Announce(Warden.WARDEN_PREFIX, $"CUloarea laserului a fost setata ca {value}");
         laserColour = Lib.COLOUR_CONFIG_MAP[value];
 
         // save back to the db too
@@ -215,7 +215,7 @@ public class JailPlayer
             return;
         }
 
-        player.Announce(Warden.WARDEN_PREFIX, $"Marker colour set to {value}");
+        player.Announce(Warden.WARDEN_PREFIX, $"Culoarea markerului a fost setata ca {value}");
         markerColour = Lib.COLOUR_CONFIG_MAP[value];
 
         // save back to the db too
@@ -344,6 +344,7 @@ public class JailPlayer
         {
             return;
         }
+        
 
         // ct hit by T they are a rebel
         if (player.IsCt() && attacker.IsT())
@@ -351,7 +352,9 @@ public class JailPlayer
             SetRebel(attacker);
         }
 
+        
         // log any ct damage
+
         else if (attacker.IsCt())
         {
             Chat.PrintConsoleAll($"CT {attacker.PlayerName} hit {player.PlayerName} for {damage}");

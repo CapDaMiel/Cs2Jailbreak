@@ -62,7 +62,7 @@ public partial class Warden
 
                 // check CT aint full 
                 // i.e at a suitable raito or either team is empty
-                if((CtCount * Config.balGuards) > TCount && CtCount != 0 && TCount != 0)
+                if((CtCount * 6) > TCount && CtCount != 0 && TCount != 0)
                 {
                     invoke.Announce(TEAM_PREFIX,$"Sorry, CT has too many players {Config.balGuards}:1 ratio maximum");
                     invoke.PlaySound("sounds/ui/counter_beep.vsnd");

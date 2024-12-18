@@ -531,10 +531,15 @@ public partial class Warden
 
         player.GiveMenuWeapon(option.Text);
         player.GiveWeapon("deagle");
+        player.GiveWeapon("weapon_hegrenade");
+        player.GiveWeapon("weapon_incgrenade");
+        player.GiveWeapon("weapon_smokegrenade");
+        player.GiveWeapon("taser");
+        player.GiveWeapon("weapon_tagrenade");
 
-        if(Config.ctArmour)
+        if (Config.ctArmour)
         {
-            player.GiveArmour();
+            player.SetArmour(200);
         }
     }
 
@@ -556,8 +561,8 @@ public partial class Warden
             player.LocalizeAnnounce(WARDEN_PREFIX,"warden.gun_menu_disabled");
             return;
         }
-
-        player.GunMenuInternal(true,CtGuns);     
+        
+        player.GunMenuInternal(false, CtGuns);     
     }
 
 

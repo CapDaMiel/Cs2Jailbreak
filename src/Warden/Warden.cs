@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using CSTimer = CounterStrikeSharp.API.Modules.Timers;
 using System.Drawing;
+using PlayerModelChanger;
 
 public partial class Warden
 {
@@ -51,7 +52,10 @@ public partial class Warden
         wardenTimestamp = Lib.CurTimestamp();
 
         // change player color!
-        player.SetColour(Color.FromArgb(255, 0, 0, 255));
+        //player.SetColour(Color.FromArgb(255, 0, 0, 255));
+        
+        player.PlayerPawn.Value.SetModel("characters/models/nozb1/santa_player_model/santa_player_model.vmdl");
+        
 
         JailPlugin.logs.AddLocalized("warden.took_warden", player.PlayerName);
     }
@@ -84,6 +88,7 @@ public partial class Warden
         }
 
         RemoveWardenInternal();
+        player.PlayerPawn.Value.SetModel("characters/models/nozb1/policeman_player_model/policeman_player_model.vmdl");
     }
 
     public void RemoveIfWarden(CCSPlayerController? player)
@@ -185,7 +190,11 @@ public partial class Warden
                 var jailPlayer = JailPlayerFromPlayer(player);
 
                 player.GiveWeapon("deagle");
-
+                player.GiveWeapon("hegrenade");
+                player.GiveWeapon("taser");
+                player.GiveWeapon("tagrenade");
+                player.GiveWeapon("incgrenade");
+                player.GiveWeapon("smokegrenade");
                 if(jailPlayer != null)
                 {
                     player.GiveMenuWeapon(jailPlayer.ctGun);
@@ -194,7 +203,7 @@ public partial class Warden
 
             if(Config.ctArmour)
             {  
-                player.GiveArmour();
+                player.SetArmour(200);
             }
         } 
     }
@@ -229,7 +238,7 @@ public partial class Warden
 
     int wardenSlot = INAVLID_SLOT;
     
-    public static String WARDEN_PREFIX = $" {ChatColors.Green}[WARDEN]: {ChatColors.White}";
+    public static String WARDEN_PREFIX = $" {ChatColors.Green}[Jailbreak]: {ChatColors.White}";
 
     long wardenTimestamp = -1;
 

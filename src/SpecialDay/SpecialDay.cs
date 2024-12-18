@@ -46,7 +46,7 @@ public partial class SpecialDay
                     player.GiveWeapon("deagle");
                 }
 
-                Chat.Announce(SPECIALDAY_PREFIX,"Special day cancelled");
+                Chat.Announce(SPECIALDAY_PREFIX,"Ziua speciala anulata!");
             }  
 
             teamSave.Restore();
@@ -62,7 +62,7 @@ public partial class SpecialDay
 
         if(activeSD != null)
         {
-            invoke.Announce(SPECIALDAY_PREFIX,"You cannot call two SD's at once");
+            invoke.Announce(SPECIALDAY_PREFIX,"Nu poti face doua zile speciale in acelasi timp!");
             return;
         }
 
@@ -275,14 +275,14 @@ public partial class SpecialDay
     {
         if(!JailPlugin.IsWarden(player))
         {
-            player.Announce(SPECIALDAY_PREFIX,"You must be a warden to use this command");
+            player.Announce(SPECIALDAY_PREFIX,"Trebuie sa fi Simon pentru a folosi aceasta comanda!");
             return;
         }
 
         // Not ready yet
         if(wsdRound < Config.wsdRound)
         {
-            player.Announce(SPECIALDAY_PREFIX,$"Please wait {Config.wsdRound - wsdRound} more rounds");
+            player.Announce(SPECIALDAY_PREFIX,$"Mai trebuie sa astepti {Config.wsdRound - wsdRound} runde!");
             return;
         }
 
@@ -322,7 +322,7 @@ public partial class SpecialDay
         NONE
     };
 
-    public static String SPECIALDAY_PREFIX = $"  {ChatColors.Green}[Special day]: {ChatColors.White}";
+    public static String SPECIALDAY_PREFIX = $"  {ChatColors.Green}[Jailbreak]: {ChatColors.White}";
 
     static String[] SD_NAME = {
         "Friendly fire",
