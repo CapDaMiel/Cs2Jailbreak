@@ -32,12 +32,12 @@ public class LRDodgeball : LRBase
 
             switch(choice)
             {
-                case "Vanilla": 
+                case "Normal": 
                 {
                     break;
                 }
                 
-                case "Low gravity":
+                case "Gravitatie mica":
                 {
                     player.SetGravity(0.6f);
                     break;

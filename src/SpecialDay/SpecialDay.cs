@@ -13,6 +13,8 @@ using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CSTimer = CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Admin;
+using Menu;
+using Menu.Enums;
 
 public enum SDState
 {
@@ -53,109 +55,124 @@ public partial class SpecialDay
         }     
     }
 
-    public void SetupSD(CCSPlayerController? invoke, ChatMenuOption option)
+    public void SetupSD(CCSPlayerController? invoke, string option, int a)
     {
-        if(!invoke.IsLegal())
+        if (a != 1)
         {
-            return;
+            if (!invoke.IsLegal())
+            {
+                return;
+            }
+
+            if (activeSD != null)
+            {
+                invoke.Announce(SPECIALDAY_PREFIX, "Nu poti face doua zile speciale in acelasi timp!");
+                return;
+            }
+
+            // invoked as warden
+            // reset the round counter so they can't do it again
+            if (wsdCommand)
+            {
+                wsdRound = 0;
+            }
         }
 
-        if(activeSD != null)
-        {
-            invoke.Announce(SPECIALDAY_PREFIX,"Nu poti face doua zile speciale in acelasi timp!");
-            return;
-        }
 
-        // invoked as warden
-        // reset the round counter so they can't do it again
-        if(wsdCommand)
-        {
-            wsdRound = 0;
-        }
-
-
-        String name = option.Text;
+        String name = option;
 
         switch(name)
         {
-            case "Friendly fire":
+            case "Zeus Day":
+                {
+                    activeSD = new SDZeusDay();
+                    type = SDType.ZEUSDAY;
+                    break;
+                }
+            case "Godmode Day":
+                {
+                    activeSD = new SDGodmode();
+                    type = SDType.GODMODE;
+                    break;
+                }
+            case "Friendly fire Day":
             {
                 activeSD = new SDFriendlyFire();
                 type = SDType.FRIENDLY_FIRE;
                 break;
             }
 
-            case "Juggernaut":
+            case "Juggernaut Day":
             {
                 activeSD = new SDJuggernaut();
                 type = SDType.JUGGERNAUT;
                 break;             
             }
 
-            case "Tank":
+            case "Tank Day":
             {
                 activeSD = new SDTank();
                 type = SDType.TANK;
                 break;                          
             }
 
-            case "Scout knife":
+            case "Scout knife Day":
             {
                 activeSD = new SDScoutKnife();
                 type = SDType.SCOUT_KNIFE;
                 break;
             }
 
-            case "Headshot only":
+            case "Headshot only Day":
             {
                 activeSD = new SDHeadshotOnly();
                 type = SDType.HEADSHOT_ONLY;
                 break;             
             }
 
-            case "Knife warday":
+            case "Knife War Day":
             {
                 activeSD = new SDKnifeWarday();
                 type = SDType.KNIFE_WARDAY;
                 break;             
             }
 
-            case "Hide and seek":
+            case "Hide and seek Day":
             {
                 activeSD = new SDHideAndSeek();
                 type = SDType.HIDE_AND_SEEK;
                 break;               
             }
 
-            case "Dodgeball":
+            case "Dodgeball Day":
             {
                 activeSD = new SDDodgeball();
                 type = SDType.DODGEBALL;
                 break;             
             }
 
-            case "Spectre":
+            case "Spectre Day":
             {
                 activeSD = new SDSpectre();
                 type = SDType.SPECTRE;
                 break;                            
             }
 
-            case "Grenade":
+            case "Grenade Day":
             {
                 activeSD = new SDGrenade();
                 type = SDType.GRENADE;
                 break;             
             }
 
-            case "Gun game":
+            case "Gun game Day":
             {
                 activeSD = new SDGunGame();
                 type = SDType.GUN_GAME;
                 break;                
             }
 
-            case "Zombie":
+            case "Zombie Day":
             {
                 activeSD = new SDZombie();
                 type = SDType.ZOMBIE;
@@ -229,14 +246,23 @@ public partial class SpecialDay
         }
 
         var sdMenu = new ChatMenu("Specialday");
-
+        List<MenuItem> list = new List<MenuItem>();
         // Build the basic LR menu
         for(int s = 0; s < SD_NAME.Length - 1; s++)
         {
-            sdMenu.AddMenuOption(SD_NAME[s], SetupSD);
+            list.Add(new MenuItem(MenuItemType.Button, [new MenuValue($"{SD_NAME[s]}")]));
+            //sdMenu.AddMenuOption(SD_NAME[s], SetupSD);
         }
+        JailPlugin.Menu.ShowScrollableMenu(player, "Meniu zile speciale", list, (menuButtons, currentMenu, selectedItems) =>
+        {
+            if(menuButtons == MenuButtons.Exit) { return; }
+            else if(menuButtons == MenuButtons.Select)
+            {
+                SetupSD(player, $"{selectedItems.Values.ElementAt(0)}");
+                JailPlugin.Menu.ClearMenus(player);
+            }
+        }, freezePlayer:true);
         
-        MenuManager.OpenChatMenu(player, sdMenu);
     }
 
 
@@ -307,6 +333,8 @@ public partial class SpecialDay
 
     public enum SDType
     {
+        ZEUSDAY,
+        GODMODE,
         FRIENDLY_FIRE,
         JUGGERNAUT,
         TANK,
@@ -322,20 +350,22 @@ public partial class SpecialDay
         NONE
     };
 
-    public static String SPECIALDAY_PREFIX = $"  {ChatColors.Green}[Jailbreak]: {ChatColors.White}";
+    public static String SPECIALDAY_PREFIX = $"  {ChatColors.Green}[Alpahcs.ro]: {ChatColors.White}";
 
     static String[] SD_NAME = {
-        "Friendly fire",
-        "Juggernaut",
-        "Tank",
-        "Spectre",
-        "Dodgeball",
-        "Grenade",
-        "Scout knife",
-        "Hide and seek",
-        "Headshot only",
-        "Knife warday",
-        "Gun game",
+        "Zeus Day",
+        "Godmode Day",
+        "Friendly fire Day",
+        "Juggernaut Day",
+        "Tank Day",
+        "Spectre Day",
+        "Dodgeball Day",
+        "Grenade Day",
+        "Scout knife Day",
+        "Hide and seek Day",
+        "Headshot only Day",
+        "Knife War Day",
+        "Gun Game Day",
         //"Zombie",
         "None"
     };

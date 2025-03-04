@@ -19,6 +19,7 @@ using System.Globalization;
 using CSTimer = CounterStrikeSharp.API.Modules.Timers;
 using System.Drawing;
 using System.Xml.Linq;
+using System.Diagnostics.Eventing.Reader;
 
 
 public partial class Warden
@@ -47,21 +48,46 @@ public partial class Warden
         mute.RoundStart();
         block.RoundStart();
         warday.RoundStart();
+        int CtCount = Lib.CtCount();
+        int TCount = Lib.TCount();
 
-        foreach(CCSPlayerController player in Lib.GetPlayers())
+        // check CT aint full 
+        // i.e at a suitable raito or either team is empty
+        if ((CtCount * 6) > TCount && CtCount != 0 && TCount != 0 && JailPlugin.Names != null)
         {
-            player.SetColour(Color.FromArgb(255, 255, 255, 255));
+            int caca = CtCount * 6 - TCount;
+            caca = caca / 6;
+            for (int i = 0; i < caca; i++)
+            {
+                var d = Utilities.GetPlayerFromUserid((int)JailPlugin.Names.ElementAt(i));
+                d.ChangeTeam(CsTeam.CounterTerrorist);
+                JailPlugin.Names.Remove(i);
+            }
+            foreach (CCSPlayerController player in Lib.GetPlayers())
+            {
+                player.SetColour(Color.FromArgb(255, 255, 255, 255));
+            }
+        
+
+            //SetWardenIfLast();
+            /*
+                ctHandicap = ((Lib.CtCount() * 3) <= Lib.TCount()) && Config.ctHandicap;
+
+                if(ctHandicap)
+                {
+                    Chat.Announce(WARDEN_PREFIX,"CT ratio is too low, handicap enabled for this round");
+                }
+            */
         }
-
-        //SetWardenIfLast();
-    /*
-        ctHandicap = ((Lib.CtCount() * 3) <= Lib.TCount()) && Config.ctHandicap;
-
-        if(ctHandicap)
+        else if((CtCount * 6) < TCount && CtCount !=0 && TCount != 0)
         {
-            Chat.Announce(WARDEN_PREFIX,"CT ratio is too low, handicap enabled for this round");
+            List<CCSPlayerController> players = Lib.GetPlayers();
+            var ctplayers = players.FindAll(player => player.IsLegal() && player.IsCt());
+            Random random = new Random();
+            var randomPlayer = ctplayers[random.Next(ctplayers.Count)];
+            randomPlayer.ChangeTeam(CsTeam.Terrorist);
+
         }
-    */
     }
 
     public void TakeDamage(CCSPlayerController? victim,CCSPlayerController? attacker, ref float damage)
@@ -205,6 +231,7 @@ public partial class Warden
         {
             jailPlayer.RebelWeaponFire(player,name);
         }
+        
     }
 
 }

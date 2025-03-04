@@ -18,10 +18,135 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using CSTimer = CounterStrikeSharp.API.Modules.Timers;
 using System.Drawing;
+using System.Net.Sockets;
+using Menu;
+using Menu.Enums;
+using PlayerModelChanger;
+using MySqlConnector;
+using CSSharpUtils.Utils;
+using CSSharpUtils.Extensions;
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Admin;
+using CounterStrikeSharp.API.Modules.Commands;
 
 
 public partial class Warden
 {
+    private bool variabila { get; set; } = false;
+
+    public void JobsMenuCmd(CCSPlayerController? player, CommandInfo command)
+    {
+        List<MenuItem> items = new List<MenuItem>();
+        items.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Hacker")]));
+        items.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Bodyguard")]));
+        items.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Drug Dealer")]));
+        items.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Weapon Dealer")]));
+        JailPlugin.Menu.ShowScrollableMenu(player, "Meniu Jobs", items, (menuButtons, currentMenu, selectedItems) =>
+        {
+            if(menuButtons == MenuButtons.Exit) { return; }
+            else if(menuButtons == MenuButtons.Select)
+            {
+                if(currentMenu.Option == 0)
+                {
+                    
+                }
+            }
+        }, freezePlayer: true, disableDeveloper:true);
+    }
+    public void CamCmd(CCSPlayerController? player, CommandInfo command)
+    {
+        //player.ExecuteClientCommandFromServer("thirdperson");
+        if (variabila == false)
+        {
+            player.Pawn().MoveType = MoveType_t.MOVETYPE_INVALID;
+            Schema.SetSchemaValue(player.Pawn().Handle, "CBaseEntity", "m_nActualMoveType", 11); // invalid
+            Utilities.SetStateChanged(player.Pawn(), "CBaseEntity", "m_MoveType");
+            variabila = true;
+        }
+        else
+        {
+            player.Pawn().MoveType = MoveType_t.MOVETYPE_WALK;
+            Schema.SetSchemaValue(player.Pawn().Handle, "CBaseEntity", "m_nActualMoveType", 2); // walk
+            Utilities.SetStateChanged(player.Pawn(), "CBaseEntity", "m_MoveType");
+            variabila = false;
+        }
+
+    }
+    public void GuardCmd(CCSPlayerController? player, CommandInfo command)
+    {
+        player.ChangeTeam(CsTeam.CounterTerrorist);
+    }
+    public void QueueCmd(CCSPlayerController? player, CommandInfo command)
+    {
+        if (JailPlugin.Names == null)
+        {
+            player.LocalizeAnnounce(TEAM_PREFIX, "Nu este nimeni in coada.");
+            return;
+        }
+        else
+        {
+            List<MenuItem> players = new List<MenuItem>();
+
+            for (int i = 0; i < JailPlugin.Names.LongCount(); i++)
+            {
+                var test = Utilities.GetPlayerFromUserid((int)JailPlugin.Names.ElementAt(i));
+                players.Add(new MenuItem(MenuItemType.Text, [new MenuValue(test.PlayerName)]));
+            }
+            JailPlugin.Menu.ShowScrollableMenu(player, "Queue Gardieni", players, (menuButtons, currentMenu, selectedItem) =>
+            {
+            
+           
+
+            }, disableDeveloper: true);
+        }
+    }
+    [RequiresPermissions("@css/vip")]
+    public void VipFunction(CCSPlayerController player, string text)
+    {
+        
+        player.SetHealth(300);
+        player.SetVelocity(2.5f);
+        player.SetGravity(0.8f);
+        player.SetArmour(player.PawnArmor + 50);
+        player.GiveNamedItem("weapon_hegrenade");
+        player.GiveNamedItem("weapon_flashbang");
+        player.Clan = "VIP";
+
+    }
+    public void DeputyCmd(CCSPlayerController? player, CommandInfo command)
+    {
+        if (player.IsLegalAliveCT() && !IsWarden(player))
+        {
+            if (player.Slot == deputySlot)
+            {
+                Chat.LocalizeAnnounce(WARDEN_PREFIX, "deputy.resign", player.PlayerName);
+                deputySlot = INAVLID_SLOT;
+                //JailPlugin._api?.AddHealth("JB - Role", player, 0, true, false);
+            }
+            else
+            {
+                if (deputySlot == INAVLID_SLOT)
+                {
+                    if (wardenSlot == INAVLID_SLOT)
+                    {
+                        TakeWardenCmd(player, command);
+                    }
+                    else
+                    {
+                        SetDeputy(player.Slot);
+                    }
+                }
+                else
+                {
+                    player.LocalizeAnnounce(WARDEN_PREFIX, "deputy.fail");
+                }
+            }
+        }
+        else if (player.IsLegal())
+        {
+            player.LocalizeAnnounce(WARDEN_PREFIX, "deputy.fail");
+        }
+    }
     public void LeaveWardenCmd(CCSPlayerController? player, CommandInfo command)
     {
         RemoveIfWarden(player);
@@ -202,16 +327,16 @@ public partial class Warden
         return (null,null);
     }
 
-    public void GiveFreedayCallback(CCSPlayerController? invoke, ChatMenuOption option)
+    public void GiveFreedayCallback(CCSPlayerController? invoke, string option)
     {
-        var (jailPlayer,player) = GiveTInternal(invoke,"freeday",option.Text);
+        var (jailPlayer,player) = GiveTInternal(invoke,"freeday",option);
 
         jailPlayer?.GiveFreeday(player);  
     }
 
-    public void GivePardonCallback(CCSPlayerController? invoke, ChatMenuOption option)
+    public void GivePardonCallback(CCSPlayerController? invoke, string option)
     {
-        var (jailPlayer,player) = GiveTInternal(invoke,"pardon",option.Text);
+        var (jailPlayer,player) = GiveTInternal(invoke,"pardon",option);
 
         jailPlayer?.GivePardon(player);  
     }
@@ -296,7 +421,7 @@ public partial class Warden
     }
 
 
-    public void GiveT(CCSPlayerController? invoke, String name, Action<CCSPlayerController, ChatMenuOption> callback,Func<CCSPlayerController?,bool> filter)
+    public void GiveT(CCSPlayerController? invoke, String name, Action<CCSPlayerController, string> callback,Func<CCSPlayerController?,bool> filter)
     {
         if(!IsWarden(invoke))
         {
@@ -326,10 +451,10 @@ public partial class Warden
         }
     }
 
-    public void ColourPlayerCallback(CCSPlayerController? invoke, ChatMenuOption option)
+    public void ColourPlayerCallback(CCSPlayerController? invoke, string option)
     {
         // save this slot for 2nd stage of the command
-        colourSlot = Player.SlotFromName(option.Text);
+        colourSlot = Player.SlotFromName(option);
 
         CCSPlayerController? player = Utilities.GetPlayerFromSlot(colourSlot);
 
@@ -340,7 +465,7 @@ public partial class Warden
 
         else
         {
-            invoke.Announce(WARDEN_PREFIX,$"No such alive player {option.Text} to colour");
+            invoke.Announce(WARDEN_PREFIX,$"No such alive player {option} to colour");
         }
     }
 
@@ -539,7 +664,7 @@ public partial class Warden
 
         if (Config.ctArmour)
         {
-            player.SetArmour(200);
+            player.SetArmour(100);
         }
     }
 
@@ -561,10 +686,33 @@ public partial class Warden
             player.LocalizeAnnounce(WARDEN_PREFIX,"warden.gun_menu_disabled");
             return;
         }
-        
+        player.LocalizeAnnounce("[server]", "trying the function");
         player.GunMenuInternal(false, CtGuns);     
     }
+    private bool isFriendlyFireForTerroristsActive = false;
+    public void BoxCmd(CCSPlayerController? player, CommandInfo command)
+    {
+        if (!IsWarden(player))
+        {
+            player.LocalizeAnnounce(WARDEN_PREFIX, "Trebuie sa fii Simon pentru a utiliza aceasta comanda!");
+            return;
+        }
 
+        isFriendlyFireForTerroristsActive = !isFriendlyFireForTerroristsActive;
+
+        if (isFriendlyFireForTerroristsActive)
+        {
+            ConVar.Find("mp_teammates_are_enemies")!.GetPrimitiveValue<bool>() = true;
+            Server.PrintToChatAll(WARDEN_PREFIX + "box-ul este pornit!");
+            //Utilities.GetPlayers().ForEach(p => p.ExecuteClientCommand($"play {Config.Sound}"));
+        }
+        else
+        {
+            Server.PrintToChatAll(WARDEN_PREFIX + "box-ul este oprit!");
+            ConVar.Find("mp_teammates_are_enemies")!.GetPrimitiveValue<bool>() = false;
+        }
+
+    }
 
 
 }

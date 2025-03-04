@@ -17,11 +17,14 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using CSTimer = CounterStrikeSharp.API.Modules.Timers;
 using System.Drawing;
+using System.Linq;
 
 public partial class Warden
 {
-    public static String TEAM_PREFIX = $" {ChatColors.Green}[TEAM]: {ChatColors.White}";
+    public static String TEAM_PREFIX = $" {ChatColors.Green}[Alphacs.Ro]: {ChatColors.White}";
+
     
+
     public bool JoinTeam(CCSPlayerController? invoke, CommandInfo command)
     {
         if(!invoke.IsLegal())
@@ -64,10 +67,22 @@ public partial class Warden
                 // i.e at a suitable raito or either team is empty
                 if((CtCount * 6) > TCount && CtCount != 0 && TCount != 0)
                 {
-                    invoke.Announce(TEAM_PREFIX,$"Sorry, CT has too many players {Config.balGuards}:1 ratio maximum");
-                    invoke.PlaySound("sounds/ui/counter_beep.vsnd");
-                    return false;
-                }
+
+                        if (JailPlugin.Names.Contains(invoke.UserId))
+                        {
+                            invoke.LocalizeAnnounce(TEAM_PREFIX, $"Esti deja in queue pe pozitia {JailPlugin.Names.IndexOf(invoke.UserId)}");
+                            return false;
+                        }
+                        else
+                        {
+                            JailPlugin.Names.Add(invoke.UserId);
+                            invoke.LocalizeAnnounce(TEAM_PREFIX, $"Ai intrat in queue pe pozitia {JailPlugin.Names.Last()}" );
+                            return false;
+                        }
+                        /*invoke.Announce(TEAM_PREFIX,$"Sorry, CT has too many players {Config.balGuards}:1 ratio maximum");
+                        invoke.PlaySound("sounds/ui/counter_beep.vsnd");
+                        return false;*/
+                    }
 
                 return true;         
             }

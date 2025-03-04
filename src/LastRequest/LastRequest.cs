@@ -1,4 +1,4 @@
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -11,8 +11,14 @@ using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Admin;
-
+using Menu;
+using Menu.Enums;
 using CSTimer = CounterStrikeSharp.API.Modules.Timers;
+using static LastRequest;
+using System.Diagnostics.Eventing.Reader;
+using CounterStrikeSharp.API.Modules.Timers;
+using System.Drawing;
+
 
 
 public partial class LastRequest
@@ -92,14 +98,138 @@ public partial class LastRequest
             lr.PairActivate();
         }
     }
+    public void DrawBeaconOnPlayer(CCSPlayerController? player)
+    {
+        if (player == null || !player.IsValid || player.Pawn.Value?.LifeState != (byte)LifeState_t.LIFE_ALIVE) return;
 
-    void InitLR(LRChoice choice)
+        Vector mid = new Vector(player?.PlayerPawn.Value?.AbsOrigin?.X, player?.PlayerPawn.Value?.AbsOrigin?.Y, player?.PlayerPawn.Value?.AbsOrigin?.Z);
+
+        int lines = 20;
+        int[] ent = new int[lines];
+        CBeam[] beam_ent = new CBeam[lines];
+
+        // draw piecewise approx by stepping angle
+        // and joining points with a dot to dot
+        float step = (float)(2.0f * Math.PI) / (float)lines;
+        float radius = 20.0f;
+
+        float angle_old = 0.0f;
+        float angle_cur = step;
+
+        float BeaconTimerSecond = 0.0f;
+
+
+        for (int i = 0; i < lines; i++) // Drawing Beacon Circle
+        {
+            Vector start = angle_on_circle(angle_old, radius, mid);
+            Vector end = angle_on_circle(angle_cur, radius, mid);
+
+            if (player.TeamNum == 2)
+            {
+                var result = DrawLaserBetween(start, end, Color.Red, 1.0f, 2.0f);
+                ent[i] = result.Item1;
+                beam_ent[i] = result.Item2;
+            }
+            if (player.TeamNum == 3)
+            {
+                var result = DrawLaserBetween(start, end, Color.Blue, 1.0f, 2.0f);
+                ent[i] = result.Item1;
+                beam_ent[i] = result.Item2;
+            }
+
+            angle_old = angle_cur;
+            angle_cur += step;
+        }
+
+        JailPlugin.globalCtx.AddTimer(0.1f, () =>
+        {
+            if (BeaconTimerSecond >= 0.9f)
+            {
+                return;
+            }
+            for (int i = 0; i < lines; i++) // Moving Beacon Circle
+            {
+                Vector start = angle_on_circle(angle_old, radius, mid);
+                Vector end = angle_on_circle(angle_cur, radius, mid);
+
+                TeleportLaser(beam_ent[i], start, end);
+
+                angle_old = angle_cur;
+                angle_cur += step;
+            }
+            radius += 10;
+            BeaconTimerSecond += 0.1f;
+        }, TimerFlags.REPEAT);
+        PlaySoundOnPlayer(player, "sounds/tools/sfm/beep.vsnd_c");
+        return;
+    }
+    private void PlaySoundOnPlayer(CCSPlayerController? player, String sound)
+    {
+        if (player == null || !player.IsValid) return;
+        player.ExecuteClientCommand($"play {sound}");
+    }
+    private static readonly Vector VectorZero = new Vector(0, 0, 0);
+    private static readonly QAngle RotationZero = new QAngle(0, 0, 0);
+    public (int, CBeam) DrawLaserBetween(Vector startPos, Vector endPos, Color color, float life, float width)
+    {
+        if (startPos == null || endPos == null)
+            return (-1, null);
+
+        CBeam beam = Utilities.CreateEntityByName<CBeam>("beam");
+
+        if (beam == null)
+        {
+            Server.PrintToChatAll($"Failed to create beam...");
+            return (-1, null);
+        }
+
+        beam.Render = color;
+        beam.Width = width;
+
+        beam.Teleport(startPos, RotationZero, VectorZero);
+        beam.EndPos.X = endPos.X;
+        beam.EndPos.Y = endPos.Y;
+        beam.EndPos.Z = endPos.Z;
+        beam.DispatchSpawn();
+
+        JailPlugin.globalCtx.AddTimer(life, () => { if (beam != null && beam.IsValid) beam.Remove(); }); // destroy beam after specific time
+
+        return ((int)beam.Index, beam);
+    }
+    public void TeleportLaser(CBeam? laser, Vector start, Vector end)
+    {
+        if (laser == null || !laser.IsValid) return;
+        // set pos
+        laser.Teleport(start, RotationZero, VectorZero);
+        // end pos
+        // NOTE: we cant just move the whole vec
+        laser.EndPos.X = end.X;
+        laser.EndPos.Y = end.Y;
+        laser.EndPos.Z = end.Z;
+        Utilities.SetStateChanged(laser, "CBeam", "m_vecEndPos");
+    }
+    private float CalculateDistance(Vector point1, Vector point2)
+    {
+        float dx = point2.X - point1.X;
+        float dy = point2.Y - point1.Y;
+        float dz = point2.Z - point1.Z;
+
+        return (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+    }
+    private Vector angle_on_circle(float angle, float radius, Vector mid)
+    {
+        // {r * cos(x),r * sin(x)} + mid
+        // NOTE: we offset Z so it doesn't clip into the ground
+        return new Vector((float)(mid.X + (radius * Math.Cos(angle))), (float)(mid.Y + (radius * Math.Sin(angle))), mid.Z + 6.0f);
+    }
+    async void InitLR(LRChoice choice)
     {
         // Okay type, choice, partner selected
         // now we have all the info we need to setup the lr
 
         CCSPlayerController? tPlayer = Utilities.GetPlayerFromSlot(choice.tSlot);
         CCSPlayerController? ctPlayer = Utilities.GetPlayerFromSlot(choice.ctSlot);
+        
 
         // check we still actually have all the players
         // our handlers only check once we have actually triggered the LR
@@ -116,12 +246,13 @@ public partial class LastRequest
             // our handlers only check once we have actually triggered the LR
             if(InLR(tPlayer) || InLR(ctPlayer))
             {
-                tPlayer.Announce(LR_PREFIX,"Un jucator este dea in LR.");
+                tPlayer.Announce(LR_PREFIX,"Un jucator este deja in LR.");
                 return;
             }
 
             if(!CanStartLR(tPlayer) || !IsValidCT(ctPlayer))
             {
+                Server.PrintToChatAll("canstartlr");
                 return;
             }
         }
@@ -147,7 +278,8 @@ public partial class LastRequest
         // create the LR
         LRBase? tLR = null;
         LRBase? ctLR = null;
-
+        Server.PrintToChatAll($"1. {choice.option}");
+        Server.PrintToChatAll($"2. {choice.type}");
         switch(choice.type)
         {
             case LRType.KNIFE:
@@ -244,7 +376,7 @@ public partial class LastRequest
         // do common player setup
         InitPlayerCommon(tPlayer,tLR.lrName,choice.option);
         InitPlayerCommon(ctPlayer,ctLR.lrName,choice.option); 
-
+ 
         // bind lr pair
         tLR.partner = ctLR;
         ctLR.partner = tLR;
@@ -253,6 +385,32 @@ public partial class LastRequest
 
         // begin counting down the lr
         tLR.CountdownStart();
+        Dictionary<CCSPlayerController, CounterStrikeSharp.API.Modules.Timers.Timer?> PlayerBeaconTimer = new Dictionary<CCSPlayerController, CounterStrikeSharp.API.Modules.Timers.Timer>();
+        if (PlayerBeaconTimer == null) PlayerBeaconTimer = new Dictionary<CCSPlayerController, CounterStrikeSharp.API.Modules.Timers.Timer?>(); // Initialize if null
+        if (!PlayerBeaconTimer?.ContainsKey(ctPlayer) == true) PlayerBeaconTimer[ctPlayer] = null; // Add the key if not present
+        if (PlayerBeaconTimer?[ctPlayer] != null) PlayerBeaconTimer?[ctPlayer]?.Kill(); // Kill Timer if running
+                                                                                    // Start Beacon
+        PlayerBeaconTimer[ctPlayer] = JailPlugin.globalCtx.AddTimer(1.0f, () =>
+        {
+            if (ctPlayer.IsLegalAlive() == false || tPlayer.IsLegalAlive() == false)
+            {
+                
+                PlayerBeaconTimer?[ctPlayer].Kill(); // Kill Timer if player die or leave
+            }
+            else DrawBeaconOnPlayer(ctPlayer);
+        }, TimerFlags.REPEAT);
+        if (!PlayerBeaconTimer?.ContainsKey(tPlayer) == true) PlayerBeaconTimer[tPlayer] = null; // Add the key if not present
+        if (PlayerBeaconTimer?[tPlayer] != null) PlayerBeaconTimer?[tPlayer]?.Kill(); // Kill Timer if running
+                                                                                        // Start Beacon
+        PlayerBeaconTimer[tPlayer] = JailPlugin.globalCtx.AddTimer(1.0f, () =>
+        {
+            if (ctPlayer.IsLegalAlive() == false || tPlayer.IsLegalAlive() == false)
+            {
+                Server.ExecuteCommand("sv_autobunnyhopping true");
+                PlayerBeaconTimer?[tPlayer].Kill(); // Kill Timer if player die or leave
+            }
+            else DrawBeaconOnPlayer(tPlayer);
+        }, TimerFlags.REPEAT);
     }
     
 
@@ -405,20 +563,32 @@ public partial class LastRequest
     }
 
 
-    public void AddLR(ChatMenu menu, bool cond, LRType type)
+    public void AddLR(List<MenuItem> lritems, bool cond, LRType type)
     {
-        if(cond)
+        if (type.ToString() == "KNIFE")
+            //LRitems.
+            lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue($"{type}")]));
+        else if (type.ToString() == "DODGEBALL")
         {
-            menu.AddMenuOption(LR_NAME[(int)type],PickOption);
+            lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue($"{type}")]));
         }
+        else if (type.ToString() == "NO_SCOPE")
+        {
+            lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue("NO SCOPE")]));
+        }
+        else if (type.ToString() == "GRENADE")
+        {
+            lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue($"{type}")]));
+        }
+        
     }
 
-    public void LRCmdInternal(CCSPlayerController? player,bool bypass, CommandInfo command)
+    public void LRCmdInternal(CCSPlayerController? player, bool bypass, CommandInfo command)
     {
         // check player can start lr
         // NOTE: higher level function checks its valid to start an lr
         // so we can do a bypass for debugging
-        if(!player.IsLegal() || rebelType != RebelType.NONE || JailPlugin.EventActive())
+        if (!player.IsLegal() || rebelType != RebelType.NONE || JailPlugin.EventActive())
         {
             return;
         }
@@ -428,22 +598,166 @@ public partial class LastRequest
         lrChoice[playerSlot].bypass = bypass;
 
         var lrMenu = new ChatMenu("LR Menu");
+        var lritems = new List<MenuItem>();
 
-        AddLR(lrMenu,Config.lrKnife,LRType.KNIFE);
-        AddLR(lrMenu,Config.lrGunToss,LRType.GUN_TOSS);
-        AddLR(lrMenu,Config.lrDodgeball,LRType.DODGEBALL);
-        AddLR(lrMenu,Config.lrNoScope,LRType.NO_SCOPE);
-        AddLR(lrMenu,Config.lrGrenade,LRType.GRENADE);
-        AddLR(lrMenu,Config.lrWar,LRType.WAR);
-        AddLR(lrMenu,Config.lrRussianRoulette,LRType.RUSSIAN_ROULETTE);
-        AddLR(lrMenu,Config.lrScoutKnife,LRType.SCOUT_KNIFE);
-        AddLR(lrMenu,Config.lrHeadshotOnly,LRType.HEADSHOT_ONLY);
-        AddLR(lrMenu,Config.lrShotForShot,LRType.SHOT_FOR_SHOT);
-        AddLR(lrMenu,Config.lrMagForMag,LRType.MAG_FOR_MAG);
+        
 
+
+
+        lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue("KNIFE")]));
+        lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue("DODGEBALL")]));
+        lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue("NO SCOPE")]));
+        lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue("GRENADE")]));
+        //lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue("WAR")]));
+        lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue("RUSSIAN ROULETTE")]));
+        //AddLR(lritems, Config.lrScoutKnife,LRType.SCOUT_KNIFE);
+        lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue("HEADSHOT ONLY")]));
+        lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue("SHOT FOR SHOT")]));
+        lritems.Add(new MenuItem(MenuItemType.Button, [new MenuValue("MAG FOR MAG")]));
+        JailPlugin.lrMenu.ShowScrollableMenu(player, "Meniu LR", lritems, (menuButtons, currentMenu, selectedItem) =>
+        {
+            if (menuButtons == MenuButtons.Exit)
+            {
+                return;
+            }
+            if (menuButtons == MenuButtons.Select)
+            {
+
+
+                if (currentMenu.Option == 0)
+                {
+                    //pune PickedOption dupa
+                    var lritems2 = new List<MenuItem>();
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Normal")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Gravitatie mica")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Viteza mare")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("One hit")]));
+                    JailPlugin.lrMenu.ShowScrollableMenu(player, "Optiuni KNIFE", lritems2, (menuButtons, currentMenu, selectedItem) =>
+                    {
+                        if (menuButtons == MenuButtons.Exit)
+                        {
+                            return;
+                        }
+                        if (menuButtons == MenuButtons.Select)
+                        {
+
+                            LRType choice = LRType.KNIFE;
+                            PickedOption(player, $"{selectedItem.Values.ElementAt(0)}", choice);
+                            //JailPlugin.lrMenu.ClearMenus(player);
+                        }
+                    }, isSubmenu: true, freezePlayer: true, disableDeveloper: true);
+                }
+                else if (currentMenu.Option == 1)
+                {
+                    var lritems2 = new List<MenuItem>();
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Normal")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Gravitatie mica")]));
+                    JailPlugin.lrMenu.ShowScrollableMenu(player, "Optiuni DODGEBALL", lritems2, (menuButtons, currentMenu, selectedItem) =>
+                    {
+                        if (menuButtons == MenuButtons.Exit)
+                        {
+                            return;
+                        }
+                        if (menuButtons == MenuButtons.Select)
+                        {
+                            LRType choice = LRType.DODGEBALL;
+                            PickedOption(player, $"{selectedItem.Values.ElementAt(0)}", choice);
+                            //JailPlugin.lrMenu.ClearMenus(player);
+                        }
+                    }, isSubmenu: true, freezePlayer: true, disableDeveloper: true);
+
+                }
+                else if (currentMenu.Option == 2)
+                {
+                    var lritems2 = new List<MenuItem>();
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("AWP")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("SSG08")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("G3SG1")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("SCAR20")]));
+                    JailPlugin.lrMenu.ShowScrollableMenu(player, "Optiuni NO SCOPE", lritems2, (menuButtons, currentMenu, selectedItem) =>
+                    {
+                        if (menuButtons == MenuButtons.Exit)
+                        {
+                            return;
+                        }
+                        if (menuButtons == MenuButtons.Select)
+                        {
+                            LRType choice = LRType.NO_SCOPE;
+                            PickedOption(player, $"{selectedItem.Values.ElementAt(0)}", choice);
+
+                        }
+                    }, isSubmenu: true, freezePlayer: true, disableDeveloper: true);
+
+                }
+                else if (currentMenu.Option == 3)
+                {
+                    var lritems2 = new List<MenuItem>();
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Normal")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Gravitatie mica")]));
+                    JailPlugin.lrMenu.ShowScrollableMenu(player, "Optiuni GRENADE", lritems2, (menuButtons, currentMenu, selectedItem) =>
+                    {
+                        if (menuButtons == MenuButtons.Exit) { return; }
+                        if (menuButtons == MenuButtons.Select)
+                        {
+                            LRType choice = LRType.GRENADE;
+                            PickedOption(player, $"{selectedItem.Values.ElementAt(0)}", choice);
+                        }
+                    }, isSubmenu:true, freezePlayer:true, disableDeveloper:true);
+                }
+                else if(currentMenu.Option == 4)
+                {
+                    LRType choice = LRType.RUSSIAN_ROULETTE;
+                    PickPartnerInternal(player, "", choice);
+                }
+                else if(currentMenu.Option == 5)
+                {
+                    LRType choice = LRType.HEADSHOT_ONLY;
+                    PickPartnerInternal(player, "", choice);
+                }
+                else if(currentMenu.Option == 6)
+                {
+                    var lritems2 = new List<MenuItem>();
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("DEAGLE")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("GLOCK")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("FIVE SEVEN")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("DUAL ELITE")]));
+                    JailPlugin.lrMenu.ShowScrollableMenu(player, "Optiuni SHOT FOR SHOT", lritems2, (menuButtons, currentMenu, selectedItem) =>
+                    {
+                        if(menuButtons == MenuButtons.Exit) { return; }
+                        if(menuButtons == MenuButtons.Select)
+                        {
+                            LRType choice = LRType.SHOT_FOR_SHOT;
+                            PickedOption(player, $"{selectedItem.Values.ElementAt(0)}", choice);
+                        }
+                    }, isSubmenu:true, freezePlayer:true, disableDeveloper:true);
+                }
+                else if(currentMenu.Option == 7)
+                {
+                    var lritems2 = new List<MenuItem>();
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("DEAGLE")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("GLOCK")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("FIVE SEVEN")]));
+                    lritems2.Add(new MenuItem(MenuItemType.Button, [new MenuValue("DUAL ELITE")]));
+                    JailPlugin.lrMenu.ShowScrollableMenu(player, "Optiuni MAG FOR MAG", lritems2, (menuButtons, currentMenu, selectedItem) =>
+                    {
+                        if (menuButtons == MenuButtons.Exit) { return; }
+                        if (menuButtons == MenuButtons.Select)
+                        {
+                            LRType choice = LRType.MAG_FOR_MAG;
+                            PickedOption(player, $"{selectedItem.Values.ElementAt(0)}", choice);
+                        }
+                    }, isSubmenu: true, freezePlayer: true, disableDeveloper: true);
+                }
+            }
+
+        }, freezePlayer: true); 
+    
+    
+    
+    }
 
         // rebel
-        if(CanRebel())
+        /*if(CanRebel())
         {
             lrMenu.AddMenuOption("Knife rebel",StartKnifeRebel);
             lrMenu.AddMenuOption("Rebel",StartRebel);
@@ -455,7 +769,7 @@ public partial class LastRequest
         }
 
         MenuManager.OpenChatMenu(player, lrMenu);
-    }
+    }*/
 
     public void LRCmd(CCSPlayerController? player, CommandInfo command)
     {   
@@ -471,7 +785,7 @@ public partial class LastRequest
     [RequiresPermissions("@jail/debug")]
     public void LRDebugCmd(CCSPlayerController? player, CommandInfo command)
     {
-        LRCmdInternal(player,true,command);
+        LRCmdInternal(player, true, command);
     }
 
     public void CancelLRCmd(CCSPlayerController? player, CommandInfo command)
@@ -506,7 +820,7 @@ public partial class LastRequest
         return LRType.NONE;
     }
 
-    LRChoice? ChoiceFromPlayer(CCSPlayerController? player)
+    static LRChoice? ChoiceFromPlayer(CCSPlayerController? player)
     {
         if(!player.IsLegal())
         {
@@ -566,9 +880,9 @@ public partial class LastRequest
 
     public JailConfig Config = new JailConfig();
 
-    LRChoice[] lrChoice = new LRChoice[64];
+    static LRChoice[] lrChoice = new LRChoice[64];
     
     long startTimestamp = 0;
 
-    public static String LR_PREFIX = $" {ChatColors.Green}[Jailbreak]: {ChatColors.White}";
+    public static String LR_PREFIX = $" {ChatColors.Green}[Alphacs.Ro]: {ChatColors.White}";
 }

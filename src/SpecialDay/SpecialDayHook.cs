@@ -33,6 +33,7 @@ public partial class SpecialDay
         // increment our round counter
         wsdRound += 1;
         EndSD();
+        
     }
 
     public void WeaponEquip(CCSPlayerController? player,String name) 
@@ -96,6 +97,10 @@ public partial class SpecialDay
         if(activeSD != null && player.IsLegal())
         {
             activeSD.PlayerHurt(player,attacker,damage,health,hitgroup);
+        }
+        else if(activeSD == null)
+        {
+            
         }
     }
 

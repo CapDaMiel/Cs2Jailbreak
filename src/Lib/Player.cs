@@ -129,12 +129,12 @@ public static class Player
         return pawn.Health;
     }
 
-    static public void Freeze(this CCSPlayerController? player)
+    static public void Freeze2(this CCSPlayerController? player)
     {
         player.SetMoveType(MoveType_t.MOVETYPE_NONE);
     }
 
-    static public void UnFreeze(this CCSPlayerController? player)
+    static public void UnFreeze2(this CCSPlayerController? player)
     {
         player.SetMoveType(MoveType_t.MOVETYPE_WALK);
     }

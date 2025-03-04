@@ -32,7 +32,7 @@ public class SDHideAndSeek : SDBase
                 player.GiveWeapon("knife");
             }
 
-            player.UnFreeze();
+            player.UnFreeze2();
         }
 
         LocalizeAnnounce("sd.seeker_release");
@@ -48,7 +48,7 @@ public class SDHideAndSeek : SDBase
         // lock them in place 500 hp, gun menu
         if(player.IsCt())
         {
-            player.Freeze();
+            player.Freeze2();
             player.EventGunMenu();
             player.SetHealth(500);
         }
@@ -63,6 +63,6 @@ public class SDHideAndSeek : SDBase
 
     public override void CleanupPlayer(CCSPlayerController player)
     {
-        player.UnFreeze();
+        player.UnFreeze2();
     }
 }

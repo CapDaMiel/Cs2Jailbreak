@@ -16,6 +16,8 @@ using CounterStrikeSharp.API.Modules.Admin;
 using System.Drawing;
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
+using Menu;
+using Menu.Enums;
 
 
 public static class Lib
@@ -25,8 +27,8 @@ public static class Lib
         return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
     }
 
-    static public void InvokePlayerMenu(CCSPlayerController? invoke, String name,
-        Action<CCSPlayerController, ChatMenuOption> callback, Func<CCSPlayerController?,bool> filter)
+    static public void InvokePlayerMenu(CCSPlayerController? invoke, string name,
+        Action<CCSPlayerController, string> callback, Func<CCSPlayerController?,bool> filter)
     {
         if(!invoke.IsLegal())
         {
@@ -34,16 +36,34 @@ public static class Lib
         }
 
         var menu = new ChatMenu(name);
-
+        var lritems3 = new List<MenuItem>();
         foreach(var player in Lib.GetPlayers())
         {
             if(filter(player))
             {
-                menu.AddMenuOption(player.PlayerName, callback);
+                //use FinaliseChoice
+                lritems3.Add(new MenuItem(MenuItemType.Button, [new MenuValue($"{player.PlayerName}")]));
+                //Server.PrintToChatAll($"nume: {player.PlayerName}");
+                
             }
         }
+        
 
-        MenuManager.OpenChatMenu(invoke, menu); 
+        JailPlugin.lrMenu.ShowScrollableMenu(invoke, "Alege un partener", lritems3, (menuButtons, currentMenu, selectedItem) =>
+        {
+            if(menuButtons == MenuButtons.Exit)
+            {
+                return;
+            }
+            if (menuButtons == MenuButtons.Select)
+            {
+                if (selectedItem == null) return;
+                
+                //Chat.LocalizeAnnounce("meotda 2 currentmenu", $"{currentMenu.Cursor} ");
+                callback(invoke, $"{selectedItem.Values.ElementAt(0)}");
+                JailPlugin.lrMenu.ClearMenus(invoke);
+            }
+        }, isSubmenu:true, freezePlayer:true, disableDeveloper:true);
     }
 
     public static void ColourMenu(CCSPlayerController? player,Action<CCSPlayerController, ChatMenuOption> callback, String name)
@@ -121,6 +141,7 @@ public static class Lib
         if(ff != null)
         {
             ff.SetValue(false);
+            
         }
     }
 

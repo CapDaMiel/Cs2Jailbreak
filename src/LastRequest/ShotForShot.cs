@@ -25,7 +25,7 @@ public class LRShotForShot : LRBase
         // NOTE: clip size assumes mag for mag
         switch(choice)
         {
-            case "Deagle":
+            case "DEAGLE":
             {
                 weaponRestrict = "deagle";
                 clipSize = 7;
@@ -41,21 +41,21 @@ public class LRShotForShot : LRBase
                 break;
             }
         */
-            case "Glock":
+            case "GLOCK":
             {
                 weaponRestrict = "glock";
                 clipSize = 20;
                 break;
             }
 
-            case "Five seven":
+            case "FIVE SEVEN":
             {
                 weaponRestrict = "fiveseven";
                 clipSize = 20;
                 break;
             }
 
-            case "Dual Elite":
+            case "DUAL ELITE":
             {
                 weaponRestrict = "elite";
                 clipSize = 30;

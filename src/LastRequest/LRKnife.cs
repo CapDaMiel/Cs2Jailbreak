@@ -27,18 +27,18 @@ public class LRKnife : LRBase
         // Handle options
         switch(choice)
         {
-            case "Vanilla":
+            case "Normal":
             {
                 break;
             }
 
-            case "Low gravity":
+            case "Gravitatie mica":
             {
                 player.SetGravity(0.6f);
                 break;
             }
 
-            case "High speed":
+            case "Viteza mare":
             {
                 player.SetVelocity(2.5f);
                 break;

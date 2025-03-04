@@ -11,7 +11,8 @@ using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Admin;
-
+using Menu;
+using Menu.Enums;
 using CSTimer = CounterStrikeSharp.API.Modules.Timers;
 
 public partial class LastRequest
@@ -47,30 +48,31 @@ public partial class LastRequest
         return true;
     }
 
-    public void FinaliseChoice(CCSPlayerController? player, ChatMenuOption option)
+    public void FinaliseChoice(CCSPlayerController? player, string option)
     {
         // called from pick_parter -> finalise the type struct
         LRChoice? choice = ChoiceFromPlayer(player);
-
+        
         if(choice == null)
         {
+            Server.PrintToChatAll("finalisechoice");
             return;
         }
         
-        String name = option.Text;
+        String name = option;
 
         choice.ctSlot = Player.SlotFromName(name);
-
+        
         // finally setup the lr
         InitLR(choice);
     }
 
-    public void PickedOption(CCSPlayerController? player, ChatMenuOption option)
+    public void PickedOption(CCSPlayerController? player, string option, LRType choice)
     {
-        PickPartnerInternal(player,option.Text);
+        PickPartnerInternal(player,option, choice);
     }
 
-    public void PickOption(CCSPlayerController? player, ChatMenuOption option)
+    /*public void PickOption(CCSPlayerController? player, ChatMenuOption option)
     {
         // called from lr_type selection
         // save type
@@ -170,7 +172,7 @@ public partial class LastRequest
                 break;
             }
         }
-    }
+    }*/
 
     bool LegalLrPartnerT(CCSPlayerController? player)
     {
@@ -182,31 +184,41 @@ public partial class LastRequest
         return player.IsLegalAliveCT() && !InLR(player);
     }
 
-    void PickPartnerInternal(CCSPlayerController? player, String name)
+    void PickPartnerInternal(CCSPlayerController? player, String name, LRType name2)
     {
         // called from pick_choice -> pick partner
         LRChoice? choice = ChoiceFromPlayer(player);
-
-        if(choice == null || !player.IsLegal())
+        if (choice == null || !player.IsLegal())
         {
             return;
         }
-
+        choice.type = name2;
         choice.option = name;
 
         String lrName = LR_NAME[(int)choice.type];
         String menuName = $"Meniu partener ({lrName})";
+        List<MenuItem> list = new List<MenuItem>();
+        list.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Cu Bhop")]));
+        list.Add(new MenuItem(MenuItemType.Button, [new MenuValue("Fara Bhop")]));
+        JailPlugin.lrMenu.ShowScrollableMenu(player, "Optiuni Bhop", list, (menubuttons, currentMenu, selectedItem) =>
+        {
+            if(menubuttons == MenuButtons.Exit) { return; }
+            else if(menubuttons == MenuButtons.Select)
+            {
+                if (currentMenu.Option == 1) { Server.ExecuteCommand("sv_autobunnyhopping false"); }
+                if (choice.bypass && player.IsCt())
+                {
+                    Lib.InvokePlayerMenu(player, menuName, FinaliseChoice, LegalLrPartnerT);
+                }
 
+                else
+                {
+                    Lib.InvokePlayerMenu(player, menuName, FinaliseChoice, LegalLrPartnerCT);
+                }
+            }
+        },isSubmenu: true, freezePlayer:true, disableDeveloper:true);
         // Debugging pick t's
-        if(choice.bypass && player.IsCt())
-        {
-            Lib.InvokePlayerMenu(player,menuName,FinaliseChoice,LegalLrPartnerT);
-        }
-
-        else
-        {
-            Lib.InvokePlayerMenu(player,menuName,FinaliseChoice,LegalLrPartnerCT);
-        }   
+           
     }
 
 }

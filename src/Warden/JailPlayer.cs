@@ -36,7 +36,7 @@ public class JailPlayer
                 {
                     "ALTER TABLE config ADD COLUMN laser_colour varchar(64) DEFAULT 'Cyan'",
                     "ALTER TABLE config ADD COLUMN marker_colour varchar(64) DEFAULT 'Cyan'",
-                    "ALTER TABLE config ADD COLUMN ct_gun varchar(64) DEFAULT 'M4'",
+                    "ALTER TABLE config ADD COLUMN ct_gun varchar(64) DEFAULT 'AK47'",
                 };
 
 
@@ -232,7 +232,7 @@ public class JailPlayer
         PurgeRound();
         laserColour = Lib.CYAN;
         markerColour = Lib.CYAN;
-        ctGun = "M4";
+        ctGun = "AK47";
     }
 
     public void SetRebel(CCSPlayerController? player)
@@ -314,10 +314,7 @@ public class JailPlayer
         }
 
         // ignore weapons players are meant to have
-        if (!weapon.Contains("knife") && !weapon.Contains("c4"))
-        {
-            SetRebel(player);
-        }
+        return;
     }
 
     // This excepts the jail player of the attacker
@@ -362,7 +359,7 @@ public class JailPlayer
     }
 
 
-    public static String REBEL_PREFIX = $" {ChatColors.Green}[REBEL]: {ChatColors.White}";
+    public static String REBEL_PREFIX = $" {ChatColors.Green}[Alphacs.Ro]: {ChatColors.White}";
 
     public static JailConfig Config = new JailConfig();
 
@@ -370,7 +367,7 @@ public class JailPlayer
     public Color markerColour { get; private set; } = Lib.CYAN;
     bool cached = false;
 
-    public String ctGun = "M4";
+    public String ctGun = "AK47";
 
     public bool IsRebel = false;
 };

@@ -5,15 +5,6 @@ using System.Drawing;
 using System.Diagnostics.CodeAnalysis;
 using Menu.Enums;
 using Menu;
-using System.Linq;
-using CounterStrikeSharp.API.Core;
-using Menu.Enums;
-using Menu;
-using CounterStrikeSharp.API.Modules.Admin;
-using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Modules.Commands;
-using System.Linq;
-using CounterStrikeSharp.API.Modules.Utils;
 
 
 public static class Weapon
@@ -140,9 +131,7 @@ public static class Weapon
 
         player.GunMenuInternal(false,EventGunMenuCallback);
     }
-    public static KitsuneMenu Menu { get; set; } = null!;
-
-   
+    
     public static void GunMenuGive(this CCSPlayerController player, ChatMenuOption option)
     {
         if(!player.IsLegalAlive())
@@ -176,57 +165,61 @@ public static class Weapon
 
     static public void GunMenuInternal(this CCSPlayerController? player, bool no_awp, Action<CCSPlayerController, ChatMenuOption> callback)
     {
+        
         // player must be alive and active!
         if (!player.IsLegalAlive())
         {
+            
             return;
         }
 
 
-        List<MenuItem> guns = new List<MenuItem>();
+        
         var items = new List<MenuItem>();
         foreach (var weapon_pair in GUN_LIST)
         {
             var weapon_name = weapon_pair.Key;
 
+            // yo, I'M here
+            // 
 
 
-
-            items.Add(new MenuItem(MenuItemType.Button, new MenuValue(weapon_name)));
-            {
-
-
-            };
+            items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(weapon_name)]));
         }
+        
 
-        // Afișează meniul Kitsune
-        Menu?.ShowScrollableMenu(player, "Meniu de arme", items, (buttons, Menu, selected) =>
+        JailPlugin.Menu.ShowScrollableMenu(player, "Meniu de arme", items, (menuButtons, currentMenu, selectedItem) =>
         {
-            if (selected == null) return;
-            // Identifică arma aleasă
-            string selectedWeaponName = selected.DataString;
-            if (!GUN_LIST.TryGetValue(selectedWeaponName, out string weaponCode))
-            {
-                player.LocalizeAnnounce("[server]","failed");
+            if (menuButtons == MenuButtons.Exit)
                 return;
+            if (menuButtons == MenuButtons.Select)
+            {
+                
+                string weaponCode = GUN_LIST.ElementAt(currentMenu.Option).Value;
+                var items2 = new List<MenuItem>();
+                foreach( var  weapon_pair in PISTOL_LIST)
+                {
+                    var weapon_name = weapon_pair.Key;
+                    items2.Add(new MenuItem(MenuItemType.Button, [new MenuValue (weapon_name)]));
+                    JailPlugin.Menu.ShowScrollableMenu(player, "Meniu de arme", items2, (menuButtons, currentMenu, selectedItem) =>
+                    {
+                        string pistolCode = PISTOL_LIST.ElementAt(currentMenu.Option).Value;
+                        player.StripWeapons();
+                        player.GiveNamedItem($"weapon_{weaponCode}");
+                        player.GiveNamedItem($"weapon_{pistolCode}");
+                        JailPlugin.Menu.ClearMenus(player);
+                    }, isSubmenu: true, freezePlayer: true, disableDeveloper: true); 
+                }
+
             }
-            player.LocalizeAnnounce("[Server]","passed");
-            // Curăță armele jucătorului și oferă noua armă
-            player.StripWeapons();
-            player.GiveWeapon(weaponCode);
-            player.GiveWeapon("deagle"); // Adaugă un pistol implicit
 
-
-
-        }, isSubmenu: false, freezePlayer: false);
-
-
+        }, isSubmenu: false, freezePlayer: true, disableDeveloper: true);
     }
 
     public static Dictionary<String, String> GUN_LIST = new Dictionary<String, String>()
     {
         {"AK47","ak47"},
-        {"M4","m4a1_silencer"},
+        {"M4A1-S","m4a1_silencer"},
         {"GALIL", "galilar" },
         {"M3","nova"},
         {"MAG", "mag7" },

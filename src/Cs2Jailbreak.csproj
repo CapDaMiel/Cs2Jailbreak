@@ -4,11 +4,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
 
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.291" />
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.296" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.7" />
     <PackageReference Include="MySqlConnector" Version="2.3.7" />
 
@@ -17,8 +18,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="CSSharpUtils">
+      <HintPath>..\..\..\..\Downloads\CSSharpUtils-v5-f56d01d\CSSharpUtils.dll</HintPath>
+    </Reference>
     <Reference Include="Dapper">
       <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\Dapper.dll</HintPath>
+    </Reference>
+    <Reference Include="HeadshotExplosion">
+      <HintPath>..\..\..\..\Downloads\HeadshotExplosion_1.0\HeadshotExplosion.dll</HintPath>
     </Reference>
     <Reference Include="KitsuneMenu">
       <HintPath>..\..\..\..\Downloads\KitsuneMenu\KitsuneMenu\shared\KitsuneMenu\KitsuneMenu.dll</HintPath>
@@ -49,12 +56,6 @@
     </Reference>
     <Reference Include="SQLitePCLRaw.provider.e_sqlite3">
       <HintPath>..\..\..\..\Downloads\PlayerModelChanger\PlayerModelChanger\SQLitePCLRaw.provider.e_sqlite3.dll</HintPath>
-    </Reference>
-    <Reference Include="T3Menu-API">
-      <HintPath>..\..\..\..\Downloads\T3Menu-API (1)\T3Menu-API\addons\counterstrikesharp\plugins\T3Menu-API\T3Menu-API.dll</HintPath>
-    </Reference>
-    <Reference Include="T3MenuSharedAPI">
-      <HintPath>..\..\..\..\Downloads\T3Menu-API (1)\T3Menu-API\addons\counterstrikesharp\plugins\T3Menu-API\T3MenuSharedAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
 

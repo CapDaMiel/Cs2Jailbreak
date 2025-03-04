@@ -92,7 +92,7 @@ public class Mute
     {
         if(!player.IsLegal())
         {
-            return;
+            
         }
 
         ApplyListenFlags(player);
@@ -100,7 +100,7 @@ public class Mute
         if(Config.muteTAllways && player.IsT())
         {
             player.Mute();
-            return;
+           
         }
 
         // no mute active or on ct unmute
@@ -108,6 +108,8 @@ public class Mute
 		{
             player.UnMute();
 		}
+
+        
     }   
 
     public void Death(CCSPlayerController? player)
@@ -171,7 +173,7 @@ public class Mute
 
     CSTimer.Timer? muteTimer = null;
 
-    public static String MUTE_PREFIX = $" {ChatColors.Green}[MUTE]: {ChatColors.White}";
+    public static String MUTE_PREFIX = $" {ChatColors.Green}[Alphacs.Ro]: {ChatColors.White}";
 
     // has the mute timer finished?
     bool muteActive = false;

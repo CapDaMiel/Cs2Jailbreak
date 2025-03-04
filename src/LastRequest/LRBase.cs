@@ -278,6 +278,7 @@ public abstract class LRBase
 
     public void CountdownStart()
     {
+        Server.PrintToChatAll("countdown");
         if(laserTimer == null)
         {
             // create the laser timer
